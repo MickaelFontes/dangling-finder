@@ -18,7 +18,7 @@ class graphQL:
         self._rest_headers = {
             "X-GitHub-Api-Version": "2022-11-28",
             "Authorization": f"Bearer {self._github_token}",
-            "Accept": "application/vnd.github+json"
+            "Accept": "application/vnd.github+json",
         }
 
     def check_repository(self):
@@ -27,13 +27,13 @@ class graphQL:
         err_console.print(f"Loading dangling commits on GitHub: {url_repo}")
         r = requests.get(url_api, headers=self._rest_headers)
         if r.status_code != 200:
-            raise GitHubRepoError(f"Could not connect to the following repo: {url_repo}")
+            raise GitHubRepoError(
+                f"Could not connect to the following repo: {url_repo}"
+            )
         err_console.print("✅ GitHub repository found")
 
     def get_pull_request_highest_number(self):
-        url = (
-            f"https://api.github.com/repos/{self._owner}/{self._repo}/pulls"
-        )
+        url = f"https://api.github.com/repos/{self._owner}/{self._repo}/pulls"
         resp = requests.get(url, headers=self._rest_headers)
         body = resp.json()
         if len(body[0]) == 0:
@@ -111,12 +111,23 @@ class graphQL:
                 )
         remaining_rate_limit = result["data"]["rateLimit"]
         if self._return_git_script:
-            dangling_heads = [e[::-1].split("/", 1)[0][::-1] for e in dangling_heads]
-            dangling_heads = [
-                f"git fetch origin {e}:refs/remotes/origin/dangling-{e}"
-                for e in dangling_heads
-            ]
+            dangling_heads = self.generate_bash_script(dangling_heads)
         return "\n".join(dangling_heads), remaining_rate_limit
 
-    def process_extracted_lists(self):
-        return None
+    def generate_bash_script(self, dangling_heads):
+        dangling_heads = [e[::-1].split("/", 1)[0][::-1] for e in dangling_heads]
+        regroup_git_commands = []
+        current_command = f"git fetch origin {dangling_heads[0]}:refs/remotes/origin/dangling-{dangling_heads[0][:10]}"
+        next_command = f"git fetch origin {dangling_heads[0]}:refs/remotes/origin/dangling-{dangling_heads[0][:10]}"
+        i = 1
+        while i < len(dangling_heads)-1:
+            while len(next_command) < 4096 and i < len(dangling_heads)-1:
+                current_command = next_command
+                next_command = (
+                    current_command
+                    + f" {dangling_heads[i]}:refs/remotes/origin/dangling-{dangling_heads[i][:10]}"
+                )
+                i += 1
+            regroup_git_commands.append(current_command)
+            next_command = f"git fetch origin {dangling_heads[i]}:refs/remotes/origin/dangling-{dangling_heads[i][:10]}"
+        return regroup_git_commands

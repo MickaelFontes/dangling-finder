@@ -3,9 +3,9 @@ from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from typing_extensions import Annotated
 
-err_console = Console(stderr=True)
-
 from dangling_finder.listing import graphQL
+
+err_console = Console(stderr=True)
 
 app = typer.Typer(
     context_settings={"help_option_names": ["-h", "--help"]}, no_args_is_help=True
