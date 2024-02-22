@@ -120,14 +120,18 @@ class graphQL:
         current_command = f"git fetch origin {dangling_heads[0]}:refs/remotes/origin/dangling-{dangling_heads[0][:10]}"
         next_command = f"git fetch origin {dangling_heads[0]}:refs/remotes/origin/dangling-{dangling_heads[0][:10]}"
         i = 1
-        while i < len(dangling_heads)-1:
-            while len(next_command) < 4096 and i < len(dangling_heads)-1:
+        while i < len(dangling_heads):
+            while len(next_command) < 4096 and i < len(dangling_heads):
                 current_command = next_command
                 next_command = (
                     current_command
                     + f" {dangling_heads[i]}:refs/remotes/origin/dangling-{dangling_heads[i][:10]}"
                 )
                 i += 1
-            regroup_git_commands.append(current_command)
-            next_command = f"git fetch origin {dangling_heads[i]}:refs/remotes/origin/dangling-{dangling_heads[i][:10]}"
+            if len(next_command) < 4096:
+                continue
+            else:
+                regroup_git_commands.append(current_command)
+                next_command = f"git fetch origin {dangling_heads[i-1]}:refs/remotes/origin/dangling-{dangling_heads[i-1][:10]}"
+        regroup_git_commands.append(next_command)
         return regroup_git_commands
