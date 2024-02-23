@@ -27,6 +27,14 @@ poetry install
 
 ## Usage
 
+To show the help, run:
+
+```bash
+poetry run dangling-finder -h
+```
+
+To use the commands, you will need to provide a GitHub API token. Read the documentation [here](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens) to generate a token.
+
 Use the script to find the dangling heads and use the generated script with the dangling heads to add the dangling commits in the clone repo.
 
 ```bash
@@ -35,4 +43,4 @@ git clone git@github.com:owner/repo.git && cd owner/repo
 chmod +x ../owner-repo-dangling-scirpt.sh && bash ../owner-repo-dangling-scirpt.sh
 ```
 
-Then scan the repo for secrets with your favorite tool.
+Then scan the repo local for secrets with your favorite tool.
