@@ -33,7 +33,7 @@ class graphQL:
         err_console.print("✅ GitHub repository found")
 
     def get_pull_request_highest_number(self):
-        url = f"https://api.github.com/repos/{self._owner}/{self._repo}/pulls"
+        url = f"https://api.github.com/repos/{self._owner}/{self._repo}/pulls?state=all"
         resp = requests.get(url, headers=self._rest_headers)
         body = resp.json()
         if len(body[0]) == 0:
@@ -43,6 +43,7 @@ class graphQL:
     def process_single_response(self):
         end_cursor = ""
         dangling_heads = []
+        total_cost = 0
         while True:
             has_next_page = False
             query = """
@@ -90,6 +91,7 @@ class graphQL:
                 new_cursor = result["data"]["repository"]["pullRequests"]["pageInfo"][
                     "endCursor"
                 ]
+                total_cost += result["data"]["rateLimit"]["cost"]
                 result_data = result["data"]["repository"]["pullRequests"]["nodes"]
                 for e in result_data:
                     loop_array = e["timelineItems"]["nodes"]
@@ -110,6 +112,7 @@ class graphQL:
                     Response headers:\n{request.headers}"""
                 )
         remaining_rate_limit = result["data"]["rateLimit"]
+        remaining_rate_limit["total"] = total_cost
         if self._return_git_script:
             dangling_heads = self.generate_bash_script(dangling_heads)
         return "\n".join(dangling_heads), remaining_rate_limit

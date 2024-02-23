@@ -43,4 +43,5 @@ def find_lost_heads(
     err_console.print("Done.\nGitHub API quotas:")
     err_console.print(f'Remaining rate limit - {remaining_rate_limit["remaining"]}')
     err_console.print(f'Reset date rate limit - {remaining_rate_limit["resetAt"]}')
+    err_console.print(f'Total cost used - {remaining_rate_limit["total"]}')
     typer.echo(result)
