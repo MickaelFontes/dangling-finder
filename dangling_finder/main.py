@@ -45,3 +45,7 @@ def find_lost_heads(
     err_console.print(f'Reset date rate limit - {remaining_rate_limit["resetAt"]}')
     err_console.print(f'Total cost used - {remaining_rate_limit["total"]}')
     typer.echo(result)
+
+
+if __name__ == "__main__":
+    app()
