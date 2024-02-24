@@ -9,6 +9,8 @@ For now, only one way is used:
 
 * recover all `force-pushed` events in a pull request and list all former HEADs of the PR (most probably dangling-commits)
 * TODO: get all available Push events from GitHub API (but only the X last events can be retrieved)
+* TODO: add closed and not merged PR, in addition to their lost force-pushed commits
+* TODO: try with user specific events to get more dangling commits
 
 ## Limitations
 
