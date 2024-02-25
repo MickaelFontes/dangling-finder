@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - id: Setup Python environment
+      - id: setup_python_environment
         uses: ./.github/actions/setup-python
       - name: Lint with flake8
         run: |
@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - id: Setup Python environment
+      - id: setup_python_environment
         uses: ./.github/actions/setup-python
       - name: Analysing the code with pylint
         run: |

@@ -9,7 +9,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - id: Setup Python environment
+    - id: setup_python_environment
       uses: ./.github/actions/setup-python
     - name: Build a binary wheel and a source tarball
       run: |
