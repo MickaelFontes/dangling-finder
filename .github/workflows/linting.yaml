@@ -16,6 +16,7 @@ jobs:
   flake8:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - id: deploy
         uses: ./.github/actions/setup-python
       - name: Lint with flake8
@@ -24,6 +25,7 @@ jobs:
   pylint:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - id: deploy
         uses: ./.github/actions/setup-python
       - name: Analysing the code with pylint
