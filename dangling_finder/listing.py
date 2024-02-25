@@ -9,7 +9,7 @@ err_console = Console(stderr=True)
 
 
 class _GraphQL:
-    """docstring for graphQL"""
+    """Class for graphQL queries of force-pushed PRs"""
 
     def __init__(self, owner, repo, github_token, return_git_script):
         super(_GraphQL, self).__init__()

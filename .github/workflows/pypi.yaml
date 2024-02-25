@@ -1,10 +1,10 @@
 name: Publish Python 🐍 distribution 📦 to PyPI and TestPyPI
 
 on:
-  workflow_run:
-    workflows: ["Python linters", "CodeQL"]
-    types:
-      - completed
+  push:
+    branches: [master]
+    tags: ["*"]
+  workflow_dispatch:
 
 
 jobs:
