@@ -13,36 +13,19 @@ permissions:
   contents: read
 
 jobs:
-  install:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python 3.10
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.10"
-      - name: Install poetry
-        run: |
-          curl -sSL https://install.python-poetry.org | python
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
-      - name: Install dependencies
-        run: |
-          poetry install
-
   flake8:
     runs-on: ubuntu-latest
-    needs:
-    - install
     steps:
+      - id: deploy
+        uses: ./.github/actions/setup
       - name: Lint with flake8
         run: |
           poetry run flake8
   pylint:
     runs-on: ubuntu-latest
-    needs:
-    - install
     steps:
+      - id: deploy
+        uses: ./.github/actions/setup
       - name: Analysing the code with pylint
         run: |
           poetry run pylint dangling_finder tests
