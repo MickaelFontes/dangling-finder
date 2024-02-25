@@ -1,0 +1,33 @@
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+
+name: Python linters
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+permissions:
+  contents: read
+
+jobs:
+  flake8:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - id: setup_python_environment
+        uses: ./.github/actions/setup-python
+      - name: Lint with flake8
+        run: |
+          poetry run flake8
+  pylint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - id: setup_python_environment
+        uses: ./.github/actions/setup-python
+      - name: Analysing the code with pylint
+        run: |
+          poetry run pylint dangling_finder tests
