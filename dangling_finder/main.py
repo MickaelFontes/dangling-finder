@@ -21,7 +21,7 @@ def find_lost_pr_heads(
     owner: str,
     repo: str,
     github_token: Annotated[str, typer.Option()],
-    git_script: Annotated[bool, typer.Option()] = False,
+    git_config: Annotated[bool, typer.Option()] = False,
 ):
     """List dangling commits SHA-1 in a GitHub repository's pull requests.
     NB: Only upper parents are returned.
@@ -32,7 +32,7 @@ def find_lost_pr_heads(
         github_token (str): personnal GitHub access token
         git_script (bool): return bash script for local git repo
     """
-    graphql_api = _GraphQL(owner, repo, github_token, git_script)
+    graphql_api = _GraphQL(owner, repo, github_token, git_config)
     graphql_api.check_repository()
     pr_max = graphql_api.get_pull_request_highest_number()
     err_console.print(f"{pr_max} pull requests to scan.")
