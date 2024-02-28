@@ -244,10 +244,6 @@ class _GraphQL:
             dangling_heads = self.generate_bash_script(dangling_heads)
         return "\n".join(dangling_heads), remaining_rate_limit, closed_prs
 
-    def execute_all_queries(self):
-        result_end, rate_limit, closed_prs = self.execute_force_pushed_queries()
-        result_end, rate_limit = self.execute_closed_pr_queries(closed_prs)
-
     def generate_bash_script(self, dangling_heads):
         dangling_heads = [
             e[::-1].split("/", 1)[0][::-1] for e in dangling_heads
