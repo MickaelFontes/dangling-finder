@@ -7,6 +7,7 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 from typing_extensions import Annotated
 
 from dangling_finder.listing import _GraphQL
+from dangling_finder.output import OutputFormat
 
 err_console = Console(stderr=True)
 
@@ -16,12 +17,38 @@ app = typer.Typer(
 )
 
 
+def mutually_exclusive_group(size=1):
+    group = []
+
+    def callback(
+        ctx: typer.Context, param: typer.CallbackParam, value: bool
+    ):  # pylint: disable=unused-argument
+        current_param = param.name.replace("_", "-")
+        if value is True and current_param not in group:
+            group.append(current_param)
+        if len(group) > size:
+            raise typer.BadParameter(
+                f"{current_param} is mutually exclusive with {group[-2]}"
+            )
+        return value
+
+    return callback
+
+
+exclusivity_callback = mutually_exclusive_group()
+
+
 @app.command(no_args_is_help=True)
 def find_lost_pr_heads(
     owner: str,
     repo: str,
     github_token: Annotated[str, typer.Option()],
-    git_script: Annotated[bool, typer.Option()] = False,
+    bash_script: Annotated[
+        bool, typer.Option(callback=exclusivity_callback)
+    ] = False,
+    git_config: Annotated[
+        bool, typer.Option(callback=exclusivity_callback)
+    ] = False,
 ):
     """List dangling commits SHA-1 in a GitHub repository's pull requests.
     NB: Only upper parents are returned.
@@ -30,9 +57,10 @@ def find_lost_pr_heads(
         owner (str): name of the repository owner
         repo (str): name of the repository
         github_token (str): personnal GitHub access token
-        git_script (bool): return bash script for local git repo
+        bash_script (bool): return bash script for local git repo
+        git_config (bool): return a confgi config text to append
     """
-    graphql_api = _GraphQL(owner, repo, github_token, git_script)
+    graphql_api = _GraphQL(owner, repo, github_token)
     graphql_api.check_repository()
     pr_max = graphql_api.get_pull_request_highest_number()
     err_console.print(f"{pr_max} pull requests to scan.")
@@ -71,10 +99,14 @@ def find_lost_pr_heads(
     err_console.print(f'Remaining rate limit - {rate_limit["remaining"]}')
     err_console.print(f'Reset date rate limit - {rate_limit["resetAt"]}')
     err_console.print(f'Total cost used - {rate_limit["total"]}')
-    typer.echo("# Force-pushed events in PRs")
-    typer.echo(result1)
-    typer.echo("# Closed PRs not merged")
-    typer.echo(result2)
+    output = OutputFormat(
+        owner=owner,
+        repo=repo,
+        bash_script=bash_script,
+        git_config=git_config,
+        json_dangling_heads=result1 + result2,
+    ).output()
+    typer.echo(output)
 
 
 if __name__ == "__main__":
