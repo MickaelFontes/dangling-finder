@@ -1,5 +1,6 @@
 """CLI module of dangling-finder"""
 
+import json
 import time
 import typer
 from rich.console import Console
@@ -71,10 +72,7 @@ def find_lost_pr_heads(
     err_console.print(f'Remaining rate limit - {rate_limit["remaining"]}')
     err_console.print(f'Reset date rate limit - {rate_limit["resetAt"]}')
     err_console.print(f'Total cost used - {rate_limit["total"]}')
-    typer.echo("# Force-pushed events in PRs")
-    typer.echo(result1)
-    typer.echo("# Closed PRs not merged")
-    typer.echo(result2)
+    typer.echo(json.dumps(result1 + result2, indent=4))
 
 
 if __name__ == "__main__":

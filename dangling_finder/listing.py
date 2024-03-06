@@ -69,7 +69,19 @@ class _GraphQL:
                     before_commit = dangling_head["beforeCommit"]
                     # see issue 6
                     if before_commit is not None:
-                        found_dangling_heads += [before_commit["commitUrl"]]
+                        commit_author = before_commit["author"]
+                        commit_head = {
+                            "commitUrl": before_commit["commitUrl"],
+                            "author": {
+                                "name": commit_author["name"],
+                                "email": commit_author["email"],
+                            },
+                            "type": {
+                                "name": "ForcePushed PR",
+                                "PR": pull_request["url"],
+                            },
+                        }
+                        found_dangling_heads += [commit_head]
         return (
             has_next_page,
             new_cursor,
@@ -86,14 +98,26 @@ class _GraphQL:
             # if PR force-pushed to begin (no commit in PR)
             # cf. https://github.com/akeneo/pim-community-dev/pull/2025
             if len(node["commits"]["nodes"]) > 0:
-                closed_pr_head_commits.append(
-                    node["commits"]["nodes"][0]["commit"]["commitUrl"]
-                )
+                pull_request = node
+                commit = node["commits"]["nodes"][0]["commit"]
+                commit_author = commit["author"]
+                commit_result = {
+                    "commitUrl": commit["commitUrl"],
+                    "author": {
+                        "name": commit_author["name"],
+                        "email": commit_author["email"],
+                    },
+                    "type": {
+                        "name": "Closed PR",
+                        "PR": pull_request["url"],
+                    },
+                }
+                closed_pr_head_commits.append(commit_result)
         return cost_add, closed_pr_head_commits
 
     def execute_closed_pr_queries(self, pr_list, previous_rate_limit):
         if len(pr_list) == 0:
-            return "", previous_rate_limit
+            return [], previous_rate_limit
         dangling_heads = []
         total_cost = 0
         query = """
@@ -105,9 +129,11 @@ class _GraphQL:
         }
         nodes(ids: $ids) {
             ... on PullRequest {
+            url
             commits(last: 1) {
                 nodes {
                 commit {
+                    author { name, email }
                     commitUrl
                 }
                 }
@@ -147,7 +173,7 @@ class _GraphQL:
         )
         if self._return_git_script:
             dangling_heads = self.generate_bash_script(dangling_heads)
-        return "\n".join(dangling_heads), remaining_rate_limit
+        return dangling_heads, remaining_rate_limit
 
     def execute_force_pushed_queries(self):
         i = 0
@@ -172,6 +198,7 @@ class _GraphQL:
             nodes {
                 ... on PullRequest {
                 id
+                url
                 number
                 closed
                 merged
@@ -180,6 +207,7 @@ class _GraphQL:
                     nodes {
                     ... on HeadRefForcePushedEvent {
                         beforeCommit {
+                        author { name, email }
                         commitUrl
                         }
                     }
@@ -240,9 +268,10 @@ class _GraphQL:
         remaining_rate_limit = result["data"]["rateLimit"]
         remaining_rate_limit["total"] = total_cost
         remaining_rate_limit["total_time"] = total_time
-        if self._return_git_script:
-            dangling_heads = self.generate_bash_script(dangling_heads)
-        return "\n".join(dangling_heads), remaining_rate_limit, closed_prs
+        return (dangling_heads,
+            remaining_rate_limit,
+            closed_prs,
+        )
 
     def generate_bash_script(self, dangling_heads):
         dangling_heads = [
