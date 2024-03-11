@@ -75,6 +75,7 @@ class _GraphQL:
                                 "name": commit_author["name"],
                                 "email": commit_author["email"],
                             },
+                            "date": before_commit["authoredDate"],
                             "type": {
                                 "name": "ForcePushed PR",
                                 "PR": pull_request["url"],
@@ -106,6 +107,7 @@ class _GraphQL:
                         "name": commit_author["name"],
                         "email": commit_author["email"],
                     },
+                    "date": commit["authoredDate"],
                     "type": {
                         "name": "Closed PR",
                         "PR": pull_request["url"],
@@ -132,6 +134,7 @@ class _GraphQL:
             commits(last: 1) {
                 nodes {
                 commit {
+                    authoredDate
                     author { name, email }
                     commitUrl
                 }
@@ -204,6 +207,7 @@ class _GraphQL:
                     nodes {
                     ... on HeadRefForcePushedEvent {
                         beforeCommit {
+                        authoredDate
                         author { name, email }
                         commitUrl
                         }
