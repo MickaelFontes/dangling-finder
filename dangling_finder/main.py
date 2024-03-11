@@ -38,7 +38,7 @@ def mutually_exclusive_group(size=1):
 exclusivity_callback = mutually_exclusive_group()
 
 
-@app.command(no_args_is_help=True)
+@app.command("pull-requests", no_args_is_help=True)
 def find_lost_pr_heads(
     owner: str,
     repo: str,
@@ -49,6 +49,7 @@ def find_lost_pr_heads(
     git_config: Annotated[
         bool, typer.Option(callback=exclusivity_callback)
     ] = False,
+    batch: Annotated[int, typer.Option()] = 0,
 ):
     """List dangling commits SHA-1 in a GitHub repository's pull requests.
     NB: Only upper parents are returned.
@@ -59,6 +60,7 @@ def find_lost_pr_heads(
         github_token (str): personnal GitHub access token
         bash_script (bool): return bash script for local git repo
         git_config (bool): return a confgi config text to append
+        batch (int): batch size of JSON output only.
     """
     graphql_api = _GraphQL(owner, repo, github_token)
     graphql_api.check_repository()
@@ -105,8 +107,15 @@ def find_lost_pr_heads(
         bash_script=bash_script,
         git_config=git_config,
         json_dangling_heads=result1 + result2,
+        batch=batch
     ).output()
     typer.echo(output)
+
+
+@app.command("events", no_args_is_help=True)
+def find_latest_dangling_push_events():
+    """WIP: find some danglign commits using latest push events
+    """
 
 
 if __name__ == "__main__":
