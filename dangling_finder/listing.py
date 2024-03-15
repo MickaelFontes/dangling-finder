@@ -71,6 +71,9 @@ class _GraphQL:
                         commit_author = before_commit["author"]
                         commit_head = {
                             "commitUrl": before_commit["commitUrl"],
+                            "commitSHA": before_commit["commitUrl"][::-1].split(
+                                "/", 1
+                            )[0],
                             "author": {
                                 "name": commit_author["name"],
                                 "email": commit_author["email"],
@@ -103,6 +106,7 @@ class _GraphQL:
                 commit_author = commit["author"]
                 commit_result = {
                     "commitUrl": commit["commitUrl"],
+                    "commitSHA": commit["commitUrl"][::-1].split("/", 1),
                     "author": {
                         "name": commit_author["name"],
                         "email": commit_author["email"],

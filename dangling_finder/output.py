@@ -1,7 +1,7 @@
 """Module used for output generation"""
 
 import json
-from ast import literal_eval
+
 from dataclasses import dataclass
 from textwrap import dedent
 
@@ -83,5 +83,7 @@ class OutputFormat:
                 self.json_dangling_heads[i : i + self.batch]
                 for i in range(0, len(self.json_dangling_heads), self.batch)
             ]
+        else:
+            out_array = self.json_dangling_heads
 
         return json.dumps(out_array, indent=4)
