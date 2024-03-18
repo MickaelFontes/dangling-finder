@@ -5,20 +5,37 @@ Find dangling commits inside your GitHub repositories.
 ## Introduction
 
 This is an attempt to find ways to recover dangling commits inside a GitHub repository, to help you improve your use of repository secret scanning tools like [trufflehog](https://github.com/trufflesecurity/trufflehog) or [gitleaks](https://github.com/gitleaks/gitleaks).
-For now, only one way is used:
+For now, two technics are used:
 
 * recover all `force-pushed` events in a pull request and list all former HEADs of the PR (most probably dangling-commits)
+* add closed and not merged PR, in addition to their lost force-pushed commits
+
+Coming in the future:
+
 * TODO: get all available Push events from GitHub API (but only the X last events can be retrieved)
-* TODO: add closed and not merged PR, in addition to their lost force-pushed commits
 * TODO: try with user specific events to get more dangling commits
+
+## Usage
+
+Run `dangling-finder` after your `git clone` to add found dangling commits to your locally cloned repository.
+
+```bash
+GITHUB_REPO=my_repository
+GITHUB_OWNER=owner
+GITHUB_TOKEN=
+```
 
 ## Limitations
 
-This tool only focuses on potential dangling-commits sources. It doesn't list:
+This tool only focuses on potential dangling-commits sources, usually not covered by default git secret scanning (`git clone` + `gitleaks detect`). It doesn't list:
 
 * current HEADS of pull requests (whether opened, merged or closed - TODO: check if closed PRs are already covered by popular tools)
 * parent dangling-commits of the dangling HEADs found in a "force-pushed" event (`git fetch` can be used to avoid thinking about this, see below in [Usage](#usage))
 * the content of the dangling-commits found: it would require to browse all commits from the dangling HEADs found (unecessary if you use `git fetch`) and to have a way to get the content of each commit (the GitHub GraphQL API does not seem to provide a way to do so, and it would cost too much using the REST API - `git fetch` avoid us this trouble)
+
+More over, in its current implementation, other limits exist:
+
+* only the first one hundred `HeadRefForcePushedEvent` are scanned in pull requests (never encountered the case of a pull requests)
 
 ## Installation
 
