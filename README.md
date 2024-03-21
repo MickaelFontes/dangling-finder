@@ -5,44 +5,73 @@ Find dangling commits inside your GitHub repositories.
 ## Introduction
 
 This is an attempt to find ways to recover dangling commits inside a GitHub repository, to help you improve your use of repository secret scanning tools like [trufflehog](https://github.com/trufflesecurity/trufflehog) or [gitleaks](https://github.com/gitleaks/gitleaks).
-For now, only one way is used:
+For now, two technics are used:
 
 * recover all `force-pushed` events in a pull request and list all former HEADs of the PR (most probably dangling-commits)
+* add closed and not merged PR, in addition to their lost force-pushed commits
+
+Coming in the future:
+
 * TODO: get all available Push events from GitHub API (but only the X last events can be retrieved)
-* TODO: add closed and not merged PR, in addition to their lost force-pushed commits
 * TODO: try with user specific events to get more dangling commits
-
-## Limitations
-
-This tool only focuses on potential dangling-commits sources. It doesn't list:
-
-* current HEADS of pull requests (whether opened, merged or closed - TODO: check if closed PRs are already covered by popular tools)
-* parent dangling-commits of the dangling HEADs found in a "force-pushed" event (`git fetch` can be used to avoid thinking about this, see below in [Usage](#usage))
-* the content of the dangling-commits found: it would require to browse all commits from the dangling HEADs found (unecessary if you use `git fetch`) and to have a way to get the content of each commit (the GitHub GraphQL API does not seem to provide a way to do so, and it would cost too much using the REST API - `git fetch` avoid us this trouble)
 
 ## Installation
 
 ```bash
+# Using Pypi package
+pip install dangling-finder
+dangling-finder -h
+
+# Using source repository directly
 git clone git@github.com:MickaelFontes/dangling-finder.git && cd dangling-finder
 poetry install
+poetry run dangling-finder -h
 ```
 
 ## Usage
 
-To show the help, run:
+Run `dangling-finder` after your `git clone` to add found dangling commits to your locally cloned repository.
 
 ```bash
-poetry run dangling-finder -h
+GITHUB_REPO=my_repository
+GITHUB_OWNER=owner
+GITHUB_TOKEN=my_token
+
+git clone git@github.com:$GITHUB_TOKEN/$GITHUB_REPO.git
+cd $GITHUB_REPO
+dangling-finder pull-requests $GITHUB_OWNER $GITHUB_REPO --github-token $GITHUB_TOKEN --git-config >> ./.git/config
+git fetch --all
+
+# Then use your favorite secret scanning tool, example below
+gitleaks detect --source . -v
 ```
+
+### GitHub authentication
 
 To use the commands, you will need to provide a GitHub API token. Read the documentation [here](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens) to generate a token.
 
-Use the script to find the dangling heads and use the generated script with the dangling heads to add the dangling commits in the clone repo.
+### About dangling commits enumeration
+
+The tool only enumerates the "top" dangling commits found using various enumeration technics - top meaning their parents commits are not enumerated recursively to check if they are also dangling commits or not.
+
+Therefore, one should not consider any output of `dangling-finder` as exhaustive, each for a given technique covered by the tool.
+
+The prefered way is to use `git fetch` to retrieve their parent commits (and so forth) easily to enrich your local repository copy.
 
 ```bash
-poetry run dangling-finder owner repo --github-token $GITHUB_TOKEN --git-script > owner-repo-dangling-scirpt.sh
-git clone git@github.com:owner/repo.git && cd owner/repo
-chmod +x ../owner-repo-dangling-scirpt.sh && bash ../owner-repo-dangling-scirpt.sh
+DANGLING_COMMIT_HASH=123456789
+git fetch $DANGLING_COMMIT_HASH:refs/remotes/origin/dangling-$DANGLING_COMMIT_HASH
 ```
 
-Then scan the repo local for secrets with your favorite tool.
+## Limitations
+
+This tool only focuses on enumerating potential dangling commits' sources, usually not covered by default git secret scanning (`git clone` + `gitleaks detect`). It only focuses on **listing** the top dangling commits (no enumeration of their **parent commits** that are also dangling commits), not included in the usual `git clone` from GitHub.  
+It doesn't list:
+
+* all found dangling commits (only the top dangling commits, not their parents and so forth - for exhaustivity, use `git fetch` see [Usage part](#about-dangling-commits-enumeration))
+* all HEADS of pull requests (only closed and not merged pull requests are listed - `git clone` already clones the branches of opened and not merged)
+* the content of the dangling commits found: it would require long recursive enumeration of dangling commits and many API calls to retrieve their content (see [commits enumeration](#about-dangling-commits-enumeration))
+
+Moreover, in its current implementation, other limits exist:
+
+* only the first 100 `HeadRefForcePushedEvent` are scanned in pull requests (state of current implementation - never encountered a pull request with more than 100 `HeadRefForcePushedEvent`)
