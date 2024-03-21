@@ -70,8 +70,8 @@ It doesn't list:
 
 * all found dangling commits (only the top dangling commits, not their parents and so forth - for exhaustivity, use `git fetch` see [Usage part](#about-dangling-commits-enumeration))
 * all HEADS of pull requests (only closed and not merged pull requests are listed - `git clone` already clones the branches of opened and not merged)
-* the content of the dangling commits found: it would require recursive enumeration of dangling commits and many API calls to retrieve their content (see [commits enumeration](#about-dangling-commits-enumeration))
+* the content of the dangling commits found: it would require long recursive enumeration of dangling commits and many API calls to retrieve their content (see [commits enumeration](#about-dangling-commits-enumeration))
 
-More over, in its current implementation, other limits exist:
+Moreover, in its current implementation, other limits exist:
 
 * only the first 100 `HeadRefForcePushedEvent` are scanned in pull requests (state of current implementation - never encountered a pull request with more than 100 `HeadRefForcePushedEvent`)
