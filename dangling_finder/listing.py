@@ -23,7 +23,7 @@ class _GraphQL:
 
     def check_repository(self):
         url_api = f"https://api.github.com/repos/{self._owner}/{self._repo}"
-        url_repo = f"https://github.com/repos/{self._owner}/{self._repo}"
+        url_repo = f"https://github.com/{self._owner}/{self._repo}"
         err_console.print(f"Loading dangling commits on GitHub: {url_repo}")
         r = requests.get(url_api, headers=self._rest_headers, timeout=10)
         if r.status_code != 200:
@@ -39,7 +39,7 @@ class _GraphQL:
         )
         resp = requests.get(url, headers=self._rest_headers, timeout=10)
         body = resp.json()
-        if len(body[0]) == 0:
+        if len(body) == 0:
             return 0
         return body[0]["number"]
 
