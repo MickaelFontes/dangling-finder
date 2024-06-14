@@ -42,7 +42,7 @@ exclusivity_callback = mutually_exclusive_group()
 def find_lost_pr_heads(
     owner: str,
     repo: str,
-    github_token: Annotated[str, typer.Option()],
+    github_token: Annotated[str, typer.Argument(envvar="GITHUB_TOKEN")],
     bash_script: Annotated[
         bool, typer.Option(callback=exclusivity_callback)
     ] = False,
