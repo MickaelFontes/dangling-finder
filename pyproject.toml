@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "dangling-finder"
-version = "0.3.1"
+version = "0.3.2"
 description = ""
 authors = ["Mickaël Fontès <81414455+MickaelFontes@users.noreply.github.com>"]
 license = "MIT"
