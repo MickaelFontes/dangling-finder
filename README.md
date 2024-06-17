@@ -35,11 +35,11 @@ Run `dangling-finder` after your `git clone` to add found dangling commits to yo
 ```bash
 GITHUB_REPO=my_repository
 GITHUB_OWNER=owner
-GITHUB_TOKEN=my_token
+GITHUB_TOKEN=my_token # read automatially by the command `dangling-finder pull-requests`
 
 git clone git@github.com:$GITHUB_TOKEN/$GITHUB_REPO.git
 cd $GITHUB_REPO
-dangling-finder pull-requests $GITHUB_OWNER $GITHUB_REPO --github-token $GITHUB_TOKEN --git-config >> ./.git/config
+dangling-finder pull-requests $GITHUB_OWNER $GITHUB_REPO --git-config >> ./.git/config
 git fetch --all
 
 # Then use your favorite secret scanning tool, example below
